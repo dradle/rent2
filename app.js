@@ -84,7 +84,7 @@ function processData(data) {
 
 // Обработка формата Google Sheets API v4
 function processValues(values) {
-    console.log('Данные values:', values);
+    console.log('Все данные таблицы:', values);
     
     if (values.length < 2) {
         showError('В таблице недостаточно данных. Проверьте строку A2');
@@ -93,16 +93,21 @@ function processValues(values) {
     
     // Данные из второй строки (индекс 1) - A2, B2, C2, D2, E2
     const row = values[1] || [];
-    console.log('Данные строки 2:', row);
+    console.log('Данные строки 2 (клиент):', row);
     
-    // Ищем последний платеж
+    // Ищем последний платеж - последняя заполненная ячейка в столбце C
+    // и соответствующая дата из столбца A
     let lastPayment = null;
     let lastPaymentDate = null;
     
-    for (let i = values.length - 1; i >= 1; i--) {
-        if (values[i] && values[i][2]) {
-            lastPayment = values[i][2];
-            lastPaymentDate = values[i][0] || '';
+    console.log('Ищу последний платеж в столбце C...');
+    for (let i = values.length - 1; i >= 0; i--) {
+        const currentRow = values[i] || [];
+        // Проверяем столбец C (индекс 2) - там должны быть суммы платежей
+        if (currentRow[2] && currentRow[2].toString().trim() !== '') {
+            lastPayment = currentRow[2];
+            lastPaymentDate = currentRow[0] || '';
+            console.log(`Найден платеж в строке ${i + 1}: Сумма=${lastPayment}, Дата=${lastPaymentDate}`);
             break;
         }
     }
@@ -139,9 +144,9 @@ function processTable(rows) {
     let lastPayment = null;
     let lastPaymentDate = null;
     
-    for (let i = rows.length - 1; i >= 1; i--) {
+    for (let i = rows.length - 1; i >= 0; i--) {
         const paymentRow = rows[i].c || [];
-        if (paymentRow[2] && paymentRow[2].v) {
+        if (paymentRow[2] && paymentRow[2].v && paymentRow[2].v.toString().trim() !== '') {
             lastPayment = paymentRow[2].v;
             lastPaymentDate = paymentRow[0] ? (paymentRow[0].f || paymentRow[0].v) : '';
             break;
@@ -168,22 +173,31 @@ function processAppScriptData(appScriptData) {
 
 // Создание страницы с данными
 function createPage(name, bike, tariff, comment, debt, lastPayment, lastPaymentDate) {
-    // Следующий платеж
+    console.log('Создаю страницу с:');
+    console.log('Имя:', name);
+    console.log('Велосипед:', bike);
+    console.log('Тариф:', tariff);
+    console.log('Комментарий:', comment);
+    console.log('Задолженность:', debt);
+    console.log('Последний платеж:', lastPayment);
+    console.log('Дата последнего платежа:', lastPaymentDate);
+    
+    // Следующий платеж (дата последнего платежа + 7 дней)
     let nextPaymentDate = null;
     if (lastPaymentDate) {
         const lastDate = parseDate(lastPaymentDate);
         if (!isNaN(lastDate.getTime())) {
             lastDate.setDate(lastDate.getDate() + 7);
             nextPaymentDate = formatDate(lastDate);
+            console.log('Следующий платеж:', nextPaymentDate);
         }
     }
     
     // Форматируем дату последнего платежа
+    let formattedLastPaymentDate = '';
     if (lastPaymentDate) {
-        const formattedDate = formatDate(parseDate(lastPaymentDate));
-        if (formattedDate) {
-            lastPaymentDate = formattedDate;
-        }
+        formattedLastPaymentDate = formatDate(parseDate(lastPaymentDate));
+        console.log('Форматированная дата:', formattedLastPaymentDate);
     }
     
     // Проверяем есть ли долг
@@ -212,9 +226,9 @@ function createPage(name, bike, tariff, comment, debt, lastPayment, lastPaymentD
             <div class="payment-info">
                 ${lastPayment ? `
                     <div class="payment-item">
-                        <strong>Последний платеж:</strong> ${lastPayment}zł - ${lastPaymentDate || ''}
+                        <strong>Последний платеж:</strong> ${lastPayment}zł - ${formattedLastPaymentDate || ''}
                     </div>
-                ` : ''}
+                ` : '<div class="payment-item">Нет данных о платежах</div>'}
                 
                 ${nextPaymentDate ? `
                     <div class="payment-item">
@@ -234,7 +248,7 @@ function createPage(name, bike, tariff, comment, debt, lastPayment, lastPaymentD
             </div>
         </div>
         
-        ${comment ? `
+        ${comment && comment.trim() !== '' ? `
             <div class="block-3">
                 <div class="message">
                     <h3>Сообщение от BikeRent</h3>
@@ -265,16 +279,50 @@ function formatDate(date) {
 }
 
 function parseDate(dateString) {
-    if (!dateString) return new Date();
+    if (!dateString || dateString.toString().trim() === '') return new Date();
     
-    // Пробуем DD.MM.YYYY
-    const match = dateString.match(/(\d{2})\.(\d{2})\.(\d{4})/);
-    if (match) {
-        const [, day, month, year] = match;
-        return new Date(year, month - 1, day);
+    const str = dateString.toString().trim();
+    
+    // Пробуем разные форматы дат
+    const formats = [
+        /(\d{2})\.(\d{2})\.(\d{4})/,     // DD.MM.YYYY
+        /(\d{1,2})\.(\d{1,2})\.(\d{4})/, // D.M.YYYY
+        /(\d{4})-(\d{2})-(\d{2})/,       // YYYY-MM-DD
+        /(\d{1,2})\/(\d{1,2})\/(\d{4})/, // MM/DD/YYYY
+        /(\d{4})\/(\d{2})\/(\d{2})/      // YYYY/MM/DD
+    ];
+    
+    for (const format of formats) {
+        const match = str.match(format);
+        if (match) {
+            const [, p1, p2, p3] = match;
+            // Определяем формат по группам
+            if (format.source.includes('\\d{4}-\\d{2}-\\d{2}') || 
+                format.source.includes('\\d{4}\\/\\d{2}\\/\\d{2}')) {
+                // YYYY-MM-DD или YYYY/MM/DD
+                return new Date(p1, p2 - 1, p3);
+            } else {
+                // DD.MM.YYYY или D.M.YYYY или MM/DD/YYYY
+                // Проверяем, если первое число > 12, то это день
+                if (parseInt(p1) > 12) {
+                    // DD.MM.YYYY
+                    return new Date(p3, p2 - 1, p1);
+                } else {
+                    // MM/DD/YYYY или дата в американском формате
+                    return new Date(p3, p1 - 1, p2);
+                }
+            }
+        }
     }
     
-    return new Date(dateString);
+    // Пробуем стандартный парсинг
+    const date = new Date(str);
+    if (!isNaN(date.getTime())) {
+        return date;
+    }
+    
+    console.warn('Не удалось распарсить дату:', str);
+    return new Date();
 }
 
 function showError(message) {
