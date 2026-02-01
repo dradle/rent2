@@ -1,36 +1,265 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    
-    <title>BikeRent - Личный кабинет</title>
-    <link rel="stylesheet" href="styles.css">
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Учёт аренды велосипедов</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .payment-card { border-left: 4px solid #28a745; }
+    .debt-card { border-left: 4px solid #dc3545; }
+    .table th { background-color: #f8f9fa; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Заголовок компании -->
-        <div class="header">
-            <div class="header-left">
-                <h1>BikeRent</h1>
-                <p class="subtitle">Аренда велосипедов в Кракове</p>
-            </div>
-            <button id="refreshBtn" class="refresh-btn" onclick="loadClientData()" title="Обновить данные">
-                ↻
-            </button>
+  <div class="container mt-4">
+    <h1 class="mb-4">📊 Учёт аренды велосипедов</h1>
+    
+    <!-- Фильтр по клиенту -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <label for="clientFilter" class="form-label">Фильтр по клиенту:</label>
+            <input type="text" id="clientFilter" class="form-control" placeholder="Введите имя клиента...">
+          </div>
+          <div class="col-md-3">
+            <label for="dateFrom" class="form-label">С даты:</label>
+            <input type="date" id="dateFrom" class="form-control">
+          </div>
+          <div class="col-md-3">
+            <label for="dateTo" class="form-label">По дату:</label>
+            <input type="date" id="dateTo" class="form-control">
+          </div>
         </div>
-
-        <!-- Контент будет загружен сюда -->
-        <main id="content">
-            <div class="loading">
-                Загрузка данных...
-            </div>
-        </main>
+        <button onclick="loadData()" class="btn btn-primary mt-3">Загрузить данные</button>
+      </div>
     </div>
-
-    <script src="app.js"></script>
+    
+    <!-- Статистика -->
+    <div id="summary" class="row mb-4"></div>
+    
+    <!-- Таблица данных -->
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">История платежей</h5>
+        <button class="btn btn-success btn-sm" onclick="showAddForm()">+ Добавить платёж</button>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Клиент</th>
+                <th>Велосипед</th>
+                <th>Дата оплаты</th>
+                <th>Должен</th>
+                <th>Заплатил</th>
+                <th>Задолженность</th>
+                <th>Комментарий</th>
+              </tr>
+            </thead>
+            <tbody id="dataTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Модальное окно для добавления -->
+  <div class="modal fade" id="addModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Добавить платёж</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="paymentForm">
+            <div class="mb-3">
+              <label class="form-label">Клиент *</label>
+              <input type="text" name="Клиент" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Велосипед</label>
+              <input type="text" name="Велосипед" class="form-control">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Дата оплаты *</label>
+              <input type="date" name="Дата оплаты" class="form-control" required>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Должен заплатить</label>
+                <input type="number" name="Должен заплатить" class="form-control" value="180">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Заплатил</label>
+                <input type="number" name="Заплатил" class="form-control" value="180">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Комментарий для клиента</label>
+              <textarea name="Комментарий для клиента" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Комментарий для себя</label>
+              <textarea name="Комментарий для себя" class="form-control" rows="2"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+          <button type="button" class="btn btn-primary" onclick="addPayment()">Сохранить</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Загрузка данных
+    function loadData() {
+      const client = document.getElementById('clientFilter').value;
+      const url = client ? `?method=getClient&client=${encodeURIComponent(client)}` : '?method=getAll';
+      
+      google.script.run
+        .withSuccessHandler(displayData)
+        .withFailureHandler(showError)
+        .doGet({ method: client ? 'getClient' : 'getAll', client: client || null });
+    }
+    
+    // Отображение данных
+    function displayData(response) {
+      const data = response.success ? response.data : [];
+      const tbody = document.getElementById('dataTable');
+      const summaryDiv = document.getElementById('summary');
+      
+      // Очищаем таблицу
+      tbody.innerHTML = '';
+      
+      if (!Array.isArray(data) || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center">Нет данных</td></tr>';
+        summaryDiv.innerHTML = '';
+        return;
+      }
+      
+      // Заполняем таблицу
+      data.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${item['Клиент'] || ''}</td>
+          <td>${item['Велосипед'] || ''}</td>
+          <td>${item['Дата оплаты'] || ''}</td>
+          <td>${item['Должен заплатить'] || 0} ₴</td>
+          <td>${item['Заплатил'] || 0} ₴</td>
+          <td><span class="badge ${item['Задолженность'] === '0 -' ? 'bg-success' : 'bg-danger'}">
+            ${item['Задолженность'] || '0 -'}
+          </span></td>
+          <td>${item['Комментарий для клиента'] || ''}</td>
+        `;
+        tbody.appendChild(row);
+      });
+      
+      // Обновляем статистику
+      updateSummary(data);
+    }
+    
+    // Обновление статистики
+    function updateSummary(data) {
+      const totalPayments = data.length;
+      const clients = [...new Set(data.map(item => item['Клиент']))];
+      const totalDebt = data.reduce((sum, item) => {
+        const debt = item['Задолженность'];
+        if (debt && debt !== '0 -') {
+          const match = debt.match(/(\d+)/);
+          return sum + (match ? parseInt(match[1]) : 0);
+        }
+        return sum;
+      }, 0);
+      
+      document.getElementById('summary').innerHTML = `
+        <div class="col-md-4">
+          <div class="card payment-card">
+            <div class="card-body">
+              <h5 class="card-title">Всего платежей</h5>
+              <p class="card-text display-6">${totalPayments}</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Количество клиентов</h5>
+              <p class="card-text display-6">${clients.length}</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card ${totalDebt > 0 ? 'debt-card' : ''}">
+            <div class="card-body">
+              <h5 class="card-title">Общая задолженность</h5>
+              <p class="card-text display-6">${totalDebt} ₴</p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    // Показать форму добавления
+    function showAddForm() {
+      // Устанавливаем сегодняшнюю дату по умолчанию
+      const today = new Date().toISOString().split('T')[0];
+      document.querySelector('[name="Дата оплаты"]').value = today;
+      
+      const modal = new bootstrap.Modal(document.getElementById('addModal'));
+      modal.show();
+    }
+    
+    // Добавить платёж
+    function addPayment() {
+      const form = document.getElementById('paymentForm');
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+      
+      const formData = new FormData(form);
+      const record = {};
+      formData.forEach((value, key) => {
+        record[key] = value;
+      });
+      
+      // Преобразуем дату в формат dd.mm.yyyy
+      if (record['Дата оплаты']) {
+        const date = new Date(record['Дата оплаты']);
+        record['Дата оплаты'] = date.toLocaleDateString('ru-RU');
+      }
+      
+      google.script.run
+        .withSuccessHandler(response => {
+          if (response.success) {
+            alert('Платёж успешно добавлен!');
+            bootstrap.Modal.getInstance(document.getElementById('addModal')).hide();
+            form.reset();
+            loadData();
+          } else {
+            alert('Ошибка: ' + response.error);
+          }
+        })
+        .withFailureHandler(showError)
+        .doPost({ method: 'addPayment', ...record });
+    }
+    
+    // Обработка ошибок
+    function showError(error) {
+      console.error(error);
+      alert('Произошла ошибка: ' + error.message);
+    }
+    
+    // Загружаем данные при старте
+    document.addEventListener('DOMContentLoaded', loadData);
+  </script>
 </body>
 </html>
