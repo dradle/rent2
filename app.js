@@ -47,15 +47,23 @@ async function loadClientData() {
 
 function processData(data) {
     console.log('Обрабатываю данные формата:', Object.keys(data));
+    console.log('Содержимое data:', data);
     
-    // Формат 1: Google Sheets API v4 (values)
+    // Формат 1: Google Apps Script (ваш формат!)
+    if (data.success && data.data) {
+        console.log('Формат: Google Apps Script');
+        processAppScriptData(data.data);
+        return;
+    }
+    
+    // Формат 2: Google Sheets API v4 (values)
     if (data.values && Array.isArray(data.values)) {
         console.log('Формат: Google Sheets API v4');
         processValues(data.values);
         return;
     }
     
-    // Формат 2: Google Visualization API (table)
+    // Формат 3: Google Visualization API (table)
     if (data.table && data.table.rows) {
         console.log('Формат: Google Visualization API');
         processTable(data.table.rows);
@@ -64,6 +72,50 @@ function processData(data) {
     
     console.log('Неизвестный формат данных:', data);
     showError('Данные получены в неизвестном формате');
+}
+
+// Обработка формата Google Apps Script
+function processAppScriptData(appScriptData) {
+    console.log('Данные Apps Script:', appScriptData);
+    
+    // Извлекаем данные из структуры Apps Script
+    const name = appScriptData.client || 'Имя клиента';
+    const bike = appScriptData.bike || 'Велосипед';
+    const tariff = appScriptData.tariff || '0';
+    const comment = appScriptData.comment || '';
+    const debt = appScriptData.debt || '0';
+    
+    // Обрабатываем lastPayment
+    let lastPayment = null;
+    let lastPaymentDate = null;
+    
+    if (appScriptData.lastPayment) {
+        // Если lastPayment - объект с amount и date
+        if (typeof appScriptData.lastPayment === 'object') {
+            lastPayment = appScriptData.lastPayment.amount;
+            lastPaymentDate = appScriptData.lastPayment.date;
+        } 
+        // Если lastPayment - просто значение
+        else if (appScriptData.lastPayment) {
+            lastPayment = appScriptData.lastPayment;
+        }
+    }
+    
+    // Если есть отдельное поле lastPaymentDate
+    if (appScriptData.lastPaymentDate && !lastPaymentDate) {
+        lastPaymentDate = appScriptData.lastPaymentDate;
+    }
+    
+    console.log('Извлеченные данные:');
+    console.log('- Имя:', name);
+    console.log('- Велосипед:', bike);
+    console.log('- Тариф:', tariff);
+    console.log('- Комментарий:', comment);
+    console.log('- Задолженность:', debt);
+    console.log('- Последний платеж:', lastPayment);
+    console.log('- Дата платежа:', lastPaymentDate);
+    
+    createPage(name, bike, tariff, comment, debt, lastPayment, lastPaymentDate);
 }
 
 // Обработка формата Google Sheets API v4
@@ -79,25 +131,20 @@ function processValues(values) {
     }
     
     // Данные клиента из второй строки (A2, B2, C2, D2, E2)
-    // Индекс 1 потому что массив начинается с 0
     const clientRow = values[1] || [];
     console.log('Данные клиента (строка 2/A2):', clientRow);
     
-    // Ищем последний платеж - проверяем ВСЕ строки начиная с 2 (индекс 1)
-    // потому что строка 1 (индекс 0) - это заголовки
+    // Ищем последний платеж
     let lastPayment = null;
     let lastPaymentDate = null;
     let lastPaymentRowIndex = -1;
     
     console.log('Ищу последний платеж в столбце C...');
     
-    // Идем с конца таблицы до начала (пропускаем заголовок - индекс 0)
     for (let i = values.length - 1; i >= 1; i--) {
         const currentRow = values[i] || [];
-        // Столбец C = индекс 2
         if (currentRow[2] !== undefined && currentRow[2] !== null && currentRow[2] !== '') {
             lastPayment = currentRow[2];
-            // Столбец A = индекс 0 (дата напротив платежа)
             lastPaymentDate = currentRow[0] || '';
             lastPaymentRowIndex = i;
             console.log(`Найден платеж в строке ${i + 1} (A${i + 1}/C${i + 1}):`, {
