@@ -1,7 +1,7 @@
 // Конфигурация
 const CONFIG = {
     // URL вашего Cloudflare Worker
-    WORKER_URL: 'https://your-worker-name.your-account.workers.dev',
+    WORKER_URL: 'https://bikerent-proxy.ddradle.workers.dev/',
     
     // ID вашей Google таблицы (из URL: https://docs.google.com/spreadsheets/d/ЭТО_ID_ТАБЛИЦЫ/edit)
     SPREADSHEET_ID: '1V-RQSTaL2ehF1QubKqySGKVZHvJT9hjn-hshSy7-mwQ',
