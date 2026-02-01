@@ -30,6 +30,10 @@ body {
     border-bottom: 1px solid #ddd;
 }
 
+.header-top {
+    margin-bottom: 15px;
+}
+
 .header h1 {
     font-size: 36px;
     color: #2c3e50;
@@ -39,6 +43,21 @@ body {
 .subtitle {
     font-size: 16px;
     color: #7f8c8d;
+}
+
+.refresh-btn {
+    padding: 8px 20px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+.refresh-btn:hover {
+    background: #2980b9;
 }
 
 /* Блок 1: Информация клиента */
@@ -157,6 +176,31 @@ body {
     padding: 40px;
     font-size: 18px;
     color: #7f8c8d;
+}
+
+/* Ошибка */
+.error {
+    text-align: center;
+    padding: 30px;
+    background: #ffebee;
+    border-radius: 8px;
+    border-left: 5px solid #e74c3c;
+}
+
+.error h3 {
+    color: #c0392b;
+    margin-bottom: 15px;
+}
+
+.error button {
+    padding: 10px 20px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 15px;
+    font-size: 14px;
 }
 
 /* Адаптивность */

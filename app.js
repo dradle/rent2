@@ -11,17 +11,33 @@ const CONFIG = {
 };
 
 // Загружаем данные при открытии страницы
-document.addEventListener('DOMContentLoaded', loadClientData);
+document.addEventListener('DOMContentLoaded', function() {
+    loadClientData();
+    // Обновляем данные каждые 5 минут
+    setInterval(loadClientData, 5 * 60 * 1000);
+});
 
 async function loadClientData() {
     try {
+        // Показываем загрузку
+        document.getElementById('content').innerHTML = '<div class="loading">Загрузка данных...</div>';
+        
+        // Добавляем временную метку для избежания кэширования
+        const timestamp = new Date().getTime();
+        
         // Формируем URL для запроса к Worker
-        const url = `${CONFIG.WORKER_URL}/?sheetId=${CONFIG.SPREADSHEET_ID}&sheetName=${CONFIG.SHEET_NAME}`;
+        const url = `${CONFIG.WORKER_URL}/?sheetId=${CONFIG.SPREADSHEET_ID}&sheetName=${CONFIG.SHEET_NAME}&_=${timestamp}`;
         
         console.log('Запрашиваю данные из:', url);
         
-        // Запрашиваем данные
-        const response = await fetch(url);
+        // Запрашиваем данные с отключенным кэшем
+        const response = await fetch(url, {
+            cache: 'no-store',
+            headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache'
+            }
+        });
         
         console.log('Ответ получен, статус:', response.status);
         
@@ -304,23 +320,11 @@ function parseDate(dateString) {
 
 function showError(message) {
     document.getElementById('content').innerHTML = `
-        <div class="block-2 has-debt">
-            <div class="payment-info">
-                <div class="payment-item" style="white-space: pre-line;">${message}</div>
-                <div class="payment-item">
-                    <button onclick="location.reload()" style="
-                        padding: 10px 20px;
-                        background: #3498db;
-                        color: white;
-                        border: none;
-                        border-radius: 5px;
-                        cursor: pointer;
-                        margin-top: 10px;
-                    ">
-                        Обновить страницу
-                    </button>
-                </div>
-            </div>
+        <div class="error">
+            <h3>Ошибка загрузки данных</h3>
+            <p style="text-align: left; margin: 15px 0; white-space: pre-line;">${message}</p>
+            <button onclick="loadClientData()">Повторить попытку</button>
+            <button onclick="location.reload()" style="background: #95a5a6; margin-left: 10px;">Обновить страницу</button>
         </div>
     `;
 }
