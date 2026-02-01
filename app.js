@@ -186,6 +186,9 @@ function createPage(name, bike, tariff, comment, debt, lastPayment, lastPaymentD
         }
     }
     
+    // Проверяем есть ли долг
+    const hasDebt = (parseFloat(debt) || 0) > 0;
+    
     // Создаем HTML
     const html = `
         <div class="block-1">
@@ -205,7 +208,7 @@ function createPage(name, bike, tariff, comment, debt, lastPayment, lastPaymentD
             </div>
         </div>
         
-        <div class="block-2 ${(parseFloat(debt) || 0) > 0 ? 'has-debt' : 'no-debt'}">
+        <div class="block-2 ${hasDebt ? 'has-debt' : 'no-debt'}">
             <div class="payment-info">
                 ${lastPayment ? `
                     <div class="payment-item">
@@ -219,11 +222,15 @@ function createPage(name, bike, tariff, comment, debt, lastPayment, lastPaymentD
                     </div>
                 ` : ''}
                 
-                ${(parseFloat(debt) || 0) > 0 ? `
+                ${hasDebt ? `
                     <div class="debt-warning">
                         Задолженность: ${debt}zł
                     </div>
-                ` : ''}
+                ` : `
+                    <div class="payment-item">
+                        <strong>Статус:</strong> Задолженностей нет ✓
+                    </div>
+                `}
             </div>
         </div>
         
