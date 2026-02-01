@@ -1,659 +1,187 @@
+/* Общие стили */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-:root {
-    --primary-color: #4CAF50;
-    --primary-dark: #388E3C;
-    --primary-light: #C8E6C9;
-    --secondary-color: #2196F3;
-    --danger-color: #F44336;
-    --warning-color: #FF9800;
-    --success-color: #4CAF50;
-    --text-dark: #333333;
-    --text-light: #666666;
-    --text-muted: #999999;
-    --bg-light: #f8f9fa;
-    --bg-white: #ffffff;
-    --border-color: #e0e0e0;
-    --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.12);
-    --radius: 16px;
-    --transition: all 0.3s ease;
-}
-
 body {
-    font-family: 'Inter', sans-serif;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    color: var(--text-dark);
-    min-height: 100vh;
-    padding: 20px;
+    font-family: Arial, sans-serif;
     line-height: 1.6;
+    color: #333;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f5f5f5;
 }
 
 .container {
-    max-width: 1200px;
-    margin: 0 auto;
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-/* Шапка */
+/* Заголовок компании */
 .header {
-    background: var(--bg-white);
-    border-radius: var(--radius);
-    padding: 25px 30px;
+    text-align: center;
     margin-bottom: 30px;
-    box-shadow: var(--shadow);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #ddd;
 }
 
-.logo {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.logo i {
-    font-size: 3rem;
-    color: var(--primary-color);
-}
-
-.logo h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: var(--primary-dark);
+.header h1 {
+    font-size: 36px;
+    color: #2c3e50;
     margin-bottom: 5px;
 }
 
 .subtitle {
-    color: var(--text-light);
-    font-size: 1.1rem;
-    font-weight: 400;
+    font-size: 16px;
+    color: #7f8c8d;
 }
 
-.header-info {
-    display: flex;
-    gap: 25px;
-}
-
-.info-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--text-light);
-}
-
-.info-item i {
-    color: var(--primary-color);
-    font-size: 1.2rem;
-}
-
-/* Карточки */
-.card {
-    background: var(--bg-white);
-    border-radius: var(--radius);
-    margin-bottom: 25px;
-    box-shadow: var(--shadow);
-    transition: var(--transition);
-    overflow: hidden;
-}
-
-.card:hover {
-    box-shadow: var(--shadow-hover);
-    transform: translateY(-2px);
-}
-
-.card-header {
-    padding: 25px 30px;
-    border-bottom: 2px solid var(--border-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.card-header h2 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--text-dark);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.card-header h2 i {
-    color: var(--primary-color);
-}
-
-.card-body {
-    padding: 30px;
-}
-
-/* Карточка клиента */
-.client-card .profile-section {
+/* Блок 1: Информация клиента */
+.block-1 {
+    background: #f8f9fa; /* Серый фон */
+    border-radius: 8px;
+    padding: 25px;
+    margin-bottom: 20px;
     display: flex;
     align-items: center;
     gap: 30px;
+    border-left: 5px solid #3498db;
 }
 
-.profile-icon {
-    width: 100px;
-    height: 100px;
-    background: linear-gradient(135deg, var(--primary-light), var(--primary-color));
-    border-radius: 50%;
+.bike-emoji {
+    font-size: 60px;
+    min-width: 80px;
+    text-align: center;
+}
+
+.client-info h2 {
+    color: #2c3e50;
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+.details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.detail-item {
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 2.5rem;
-    color: white;
+    gap: 10px;
 }
 
-.profile-info h3 {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--text-dark);
+.label {
+    font-weight: bold;
+    color: #555;
+    min-width: 120px;
+}
+
+/* Блок 2: Платежи */
+.block-2 {
+    border-radius: 8px;
+    padding: 25px;
     margin-bottom: 20px;
+    border-left: 5px solid #2ecc71; /* Зеленый по умолчанию */
 }
 
-.profile-details {
+.block-2.no-debt {
+    background: #d5f4e6; /* Светло-зеленый */
+}
+
+.block-2.has-debt {
+    background: #ffebee; /* Светло-красный */
+    border-left-color: #e74c3c;
+}
+
+.payment-info {
     display: flex;
     flex-direction: column;
     gap: 15px;
 }
 
-.detail {
-    display: flex;
-    align-items: center;
-    gap: 15px;
+.payment-item {
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 5px;
 }
 
-.detail-label {
-    font-weight: 600;
-    color: var(--text-light);
-    min-width: 120px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+.debt-warning {
+    font-size: 20px;
+    font-weight: bold;
+    color: #e74c3c;
+    text-align: center;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 5px;
+    margin-top: 10px;
+    animation: pulse 2s infinite;
 }
 
-.detail-label i {
-    width: 20px;
-    color: var(--primary-color);
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.8; }
+    100% { opacity: 1; }
 }
 
-.detail-value {
-    font-size: 1.1rem;
-    color: var(--text-dark);
-}
-
-.highlight {
-    color: var(--primary-color);
-    font-weight: 700;
-    font-size: 1.2rem;
-}
-
-.status-badge {
-    padding: 8px 20px;
-    border-radius: 50px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.status-active {
-    background: var(--primary-light);
-    color: var(--primary-dark);
-}
-
-.status-overdue {
-    background: #FFEBEE;
-    color: var(--danger-color);
-}
-
-/* Финансовая карточка */
-.finance-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 25px;
-}
-
-.finance-item {
-    background: var(--bg-light);
-    border-radius: 12px;
-    padding: 25px;
-    border: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    transition: var(--transition);
-}
-
-.finance-item:hover {
-    border-color: var(--primary-color);
-    background: white;
-}
-
-.finance-icon {
-    width: 60px;
-    height: 60px;
-    background: white;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.8rem;
-    color: var(--primary-color);
-    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.15);
-}
-
-.finance-content {
-    flex: 1;
-}
-
-.finance-label {
-    color: var(--text-light);
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 5px;
-}
-
-.finance-value {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--text-dark);
-    margin-bottom: 5px;
-}
-
-.finance-date {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-}
-
-.finance-note {
-    color: var(--text-light);
-    font-size: 0.9rem;
-    margin-top: 5px;
-}
-
-.upcoming {
-    color: var(--secondary-color);
-}
-
-.debt-item {
-    border-color: var(--danger-color);
-    background: #FFF5F5;
-}
-
-.debt-item .finance-icon {
-    color: var(--danger-color);
-    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.15);
-}
-
-.debt-value {
-    color: var(--danger-color);
-}
-
-.pay-button {
-    background: linear-gradient(135deg, var(--danger-color), #E53935);
-    color: white;
-    border: none;
-    padding: 12px 25px;
+/* Блок 3: Сообщение */
+.block-3 {
+    background: #fff9e6; /* Желтый фон */
     border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    white-space: nowrap;
-}
-
-.pay-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(244, 67, 54, 0.25);
-}
-
-/* Карточка с сообщением */
-.message-card .message-content {
-    display: flex;
-    gap: 25px;
-    align-items: flex-start;
-}
-
-.message-icon {
-    width: 50px;
-    height: 50px;
-    background: var(--primary-light);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    color: var(--primary-color);
-    flex-shrink: 0;
-}
-
-.message-text {
-    font-size: 1.1rem;
-    line-height: 1.8;
-    color: var(--text-dark);
-    background: var(--bg-light);
-    padding: 20px;
-    border-radius: 12px;
-    border-left: 4px solid var(--primary-color);
-}
-
-.message-time {
-    margin-top: 20px;
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-/* Информационная карточка */
-.info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 30px;
-}
-
-.info-item {
-    text-align: center;
     padding: 25px;
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    transition: var(--transition);
+    border-left: 5px solid #f1c40f;
 }
 
-.info-item:hover {
-    border-color: var(--primary-color);
-    transform: translateY(-5px);
-}
-
-.info-item i {
-    font-size: 2.5rem;
-    color: var(--primary-color);
-    margin-bottom: 20px;
-}
-
-.info-item h4 {
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin-bottom: 10px;
-    color: var(--text-dark);
-}
-
-.info-item p {
-    color: var(--text-light);
-    font-size: 0.95rem;
-}
-
-/* Карточка ошибки */
-.error-card {
-    text-align: center;
-}
-
-.error-content {
-    padding: 50px 30px;
-}
-
-.error-icon {
-    font-size: 4rem;
-    color: var(--warning-color);
-    margin-bottom: 30px;
-}
-
-.error-details h3 {
-    font-size: 1.8rem;
+.message h3 {
+    color: #d35400;
+    font-size: 18px;
     margin-bottom: 15px;
-    color: var(--text-dark);
 }
 
-.error-details p {
-    color: var(--text-light);
-    margin-bottom: 30px;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.error-actions {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    margin-bottom: 30px;
-    flex-wrap: wrap;
-}
-
-.btn-primary, .btn-secondary {
-    padding: 14px 30px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition);
-    border: none;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 1rem;
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-    color: white;
-}
-
-.btn-secondary {
-    background: white;
-    color: var(--text-dark);
-    border: 2px solid var(--border-color);
-}
-
-.btn-primary:hover, .btn-secondary:hover {
-    transform: translateY(-2px);
-}
-
-.btn-primary:hover {
-    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.25);
-}
-
-.btn-secondary:hover {
-    border-color: var(--primary-color);
-    color: var(--primary-color);
-}
-
-.error-help {
-    background: var(--bg-light);
-    padding: 20px;
-    border-radius: 12px;
-    max-width: 500px;
-    margin: 0 auto;
-}
-
-.error-help p {
-    margin: 10px 0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    justify-content: center;
-}
-
-.error-help i {
-    color: var(--primary-color);
+.message-content {
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 5px;
+    border-left: 3px solid #f1c40f;
 }
 
 /* Загрузка */
 .loading {
     text-align: center;
-    padding: 80px 30px;
-}
-
-.spinner-container {
-    margin: 0 auto 30px;
-    width: 80px;
-    height: 80px;
-    position: relative;
-}
-
-.spinner {
-    width: 100%;
-    height: 100%;
-    border: 5px solid var(--primary-light);
-    border-top-color: var(--primary-color);
-    border-radius: 50%;
-    animation: spin 1.5s linear infinite;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-.loading p {
-    font-size: 1.3rem;
-    color: var(--text-dark);
-    margin-bottom: 10px;
-    font-weight: 500;
-}
-
-.loading-sub {
-    color: var(--text-light) !important;
-    font-size: 1rem !important;
-    font-weight: 400 !important;
-}
-
-/* Футер */
-.footer {
-    background: var(--bg-white);
-    border-radius: var(--radius);
-    margin-top: 50px;
-    box-shadow: var(--shadow);
-    overflow: hidden;
-}
-
-.footer-content {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 30px;
     padding: 40px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.footer-section h3 {
-    font-size: 1.2rem;
-    margin-bottom: 15px;
-    color: var(--text-dark);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.footer-section h3 i {
-    color: var(--primary-color);
-}
-
-.footer-section p {
-    color: var(--text-light);
-    margin: 5px 0;
-    font-size: 0.95rem;
-}
-
-.copyright {
-    padding: 25px;
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 0.9rem;
-}
-
-.copyright a {
-    color: var(--primary-color);
-    text-decoration: none;
-}
-
-.copyright a:hover {
-    text-decoration: underline;
+    font-size: 18px;
+    color: #7f8c8d;
 }
 
 /* Адаптивность */
-@media (max-width: 992px) {
-    .header {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .logo {
-        justify-content: center;
-    }
-    
-    .header-info {
-        justify-content: center;
-    }
-    
-    .profile-section {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .detail {
-        justify-content: center;
-    }
-}
-
 @media (max-width: 768px) {
-    .finance-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .finance-item {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .message-content {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .error-actions {
-        flex-direction: column;
-    }
-    
-    .btn-primary, .btn-secondary {
-        width: 100%;
-        justify-content: center;
-    }
-    
-    .card-header {
-        flex-direction: column;
-        gap: 15px;
-        text-align: center;
-    }
-}
-
-@media (max-width: 576px) {
-    .container {
+    body {
         padding: 10px;
     }
     
-    .header, .card-header, .card-body {
-        padding: 20px;
+    .block-1 {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
     }
     
-    .logo h1 {
-        font-size: 2rem;
+    .bike-emoji {
+        font-size: 50px;
     }
     
-    .profile-info h3 {
-        font-size: 1.5rem;
+    .detail-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 5px;
+    }
+    
+    .label {
+        min-width: auto;
     }
 }
