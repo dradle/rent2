@@ -1,9 +1,9 @@
-// Настройки - ЗАМЕНИТЕ ЭТИ ДАННЫЕ!
+// Настройки
 const CONFIG = {
-    // URL вашего Cloudflare Worker
-    WORKER_URL: 'https://bikerent-proxy.ddradle.workers.dev/',
+    // URL вашего Cloudflare Worker (БЕЗ двойного слеша в конце!)
+    WORKER_URL: 'https://bikerent-proxy.ddradle.workers.dev',
     
-    // ID вашей Google таблицы (из URL таблицы)
+    // ID вашей Google таблицы
     SPREADSHEET_ID: '1V-RQSTaL2ehF1QubKqySGKVZHvJT9hjn-hshSy7-mwQ',
     
     // Имя листа для клиента
@@ -13,8 +13,8 @@ const CONFIG = {
 // Загружаем данные при открытии страницы
 document.addEventListener('DOMContentLoaded', function() {
     loadClientData();
-    // Обновляем данные каждые 5 минут
-    setInterval(loadClientData, 5 * 60 * 1000);
+    // Обновляем данные каждые 10 минут
+    setInterval(loadClientData, 10 * 60 * 1000);
 });
 
 async function loadClientData() {
@@ -25,19 +25,14 @@ async function loadClientData() {
         // Добавляем временную метку для избежания кэширования
         const timestamp = new Date().getTime();
         
-        // Формируем URL для запроса к Worker
-        const url = `${CONFIG.WORKER_URL}/?sheetId=${CONFIG.SPREADSHEET_ID}&sheetName=${CONFIG.SHEET_NAME}&_=${timestamp}`;
+        // Формируем URL для запроса к Worker (убираем лишние слеши!)
+        const baseUrl = CONFIG.WORKER_URL.replace(/\/+$/, ''); // Убираем слеш в конце если есть
+        const url = `${baseUrl}/?sheetId=${CONFIG.SPREADSHEET_ID}&sheetName=${CONFIG.SHEET_NAME}&_=${timestamp}`;
         
         console.log('Запрашиваю данные из:', url);
         
-        // Запрашиваем данные с отключенным кэшем
-        const response = await fetch(url, {
-            cache: 'no-store',
-            headers: {
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache'
-            }
-        });
+        // ПРОСТОЙ запрос без специальных заголовков (чтобы избежать CORS preflight)
+        const response = await fetch(url);
         
         console.log('Ответ получен, статус:', response.status);
         
@@ -53,7 +48,7 @@ async function loadClientData() {
         
     } catch (error) {
         // Показываем ошибку
-        showError(`Ошибка: ${error.message}<br><br>Проверьте:<br>1. Правильность URL Worker<br>2. Правильность ID таблицы<br>3. Что таблица доступна для Service Account`);
+        showError(`Не удалось загрузить данные: ${error.message}<br><br>Попробуйте:<br>1. Обновить страницу<br>2. Проверить интернет-соединение`);
         console.error('Полная ошибка:', error);
     }
 }
@@ -84,7 +79,7 @@ function processData(data) {
     
     // Если данные в другом формате
     console.log('Неизвестный формат данных:', data);
-    showError('Данные получены в неизвестном формате. Проверьте настройки Worker.');
+    showError('Данные получены в неизвестном формате');
 }
 
 // Обработка формата Google Sheets API v4
@@ -92,23 +87,22 @@ function processValues(values) {
     console.log('Данные values:', values);
     
     if (values.length < 2) {
-        showError('В таблице недостаточно строк данных. Нужна минимум вторая строка (A2, B2, C2, D2, E2)');
+        showError('В таблице недостаточно данных. Проверьте строку A2');
         return;
     }
     
-    // Данные из второй строки (индекс 1)
-    const row = values[1];
+    // Данные из второй строки (индекс 1) - A2, B2, C2, D2, E2
+    const row = values[1] || [];
     console.log('Данные строки 2:', row);
     
-    // Ищем последний платеж (последняя заполненная ячейка в столбце C, индекс 2)
+    // Ищем последний платеж
     let lastPayment = null;
     let lastPaymentDate = null;
     
     for (let i = values.length - 1; i >= 1; i--) {
         if (values[i] && values[i][2]) {
-            lastPayment = values[i][2]; // Столбец C (индекс 2)
-            lastPaymentDate = values[i][0] || ''; // Столбец A (индекс 0)
-            console.log(`Найден платеж в строке ${i}:`, lastPayment, lastPaymentDate);
+            lastPayment = values[i][2];
+            lastPaymentDate = values[i][0] || '';
             break;
         }
     }
@@ -129,15 +123,12 @@ function processTable(rows) {
     console.log('Данные table:', rows);
     
     if (rows.length < 2) {
-        showError('В таблице недостаточно строк данных');
+        showError('В таблице недостаточно данных');
         return;
     }
     
-    // Данные из второй строки (индекс 1)
     const row = rows[1].c || [];
-    console.log('Данные строки 2:', row);
     
-    // Получаем значения из ячеек
     const name = row[0] ? row[0].v : 'Имя клиента';
     const bike = row[1] ? row[1].v : 'Велосипед';
     const tariff = row[2] ? row[2].v : '0';
@@ -177,16 +168,7 @@ function processAppScriptData(appScriptData) {
 
 // Создание страницы с данными
 function createPage(name, bike, tariff, comment, debt, lastPayment, lastPaymentDate) {
-    console.log('Создаю страницу с данными:');
-    console.log('Имя:', name);
-    console.log('Велосипед:', bike);
-    console.log('Тариф:', tariff);
-    console.log('Комментарий:', comment);
-    console.log('Задолженность:', debt);
-    console.log('Последний платеж:', lastPayment);
-    console.log('Дата последнего платежа:', lastPaymentDate);
-    
-    // Следующий платеж (дата последнего платежа + 7 дней)
+    // Следующий платеж
     let nextPaymentDate = null;
     if (lastPaymentDate) {
         const lastDate = parseDate(lastPaymentDate);
@@ -199,14 +181,13 @@ function createPage(name, bike, tariff, comment, debt, lastPayment, lastPaymentD
     // Форматируем дату последнего платежа
     if (lastPaymentDate) {
         const formattedDate = formatDate(parseDate(lastPaymentDate));
-        if (formattedDate && !formattedDate.includes('Invalid')) {
+        if (formattedDate) {
             lastPaymentDate = formattedDate;
         }
     }
     
-    // Создаем HTML страницы
+    // Создаем HTML
     const html = `
-        <!-- Блок 1: Информация клиента -->
         <div class="block-1">
             <div class="bike-emoji">🚲</div>
             <div class="client-info">
@@ -224,12 +205,11 @@ function createPage(name, bike, tariff, comment, debt, lastPayment, lastPaymentD
             </div>
         </div>
         
-        <!-- Блок 2: Платежи -->
         <div class="block-2 ${(parseFloat(debt) || 0) > 0 ? 'has-debt' : 'no-debt'}">
             <div class="payment-info">
                 ${lastPayment ? `
                     <div class="payment-item">
-                        <strong>Последний платеж:</strong> ${lastPayment}zł - ${lastPaymentDate || 'дата не указана'}
+                        <strong>Последний платеж:</strong> ${lastPayment}zł - ${lastPaymentDate || ''}
                     </div>
                 ` : ''}
                 
@@ -247,7 +227,6 @@ function createPage(name, bike, tariff, comment, debt, lastPayment, lastPaymentD
             </div>
         </div>
         
-        <!-- Блок 3: Сообщение (только если есть) -->
         ${comment ? `
             <div class="block-3">
                 <div class="message">
@@ -260,7 +239,6 @@ function createPage(name, bike, tariff, comment, debt, lastPayment, lastPaymentD
         ` : ''}
     `;
     
-    // Вставляем HTML на страницу
     document.getElementById('content').innerHTML = html;
 }
 
@@ -270,9 +248,7 @@ function formatDate(date) {
     
     const d = typeof date === 'string' ? new Date(date) : date;
     
-    if (isNaN(d.getTime())) {
-        return '';
-    }
+    if (isNaN(d.getTime())) return '';
     
     const day = d.getDate().toString().padStart(2, '0');
     const month = (d.getMonth() + 1).toString().padStart(2, '0');
@@ -284,47 +260,22 @@ function formatDate(date) {
 function parseDate(dateString) {
     if (!dateString) return new Date();
     
-    // Пробуем разные форматы дат
-    const formats = [
-        /(\d{2})\.(\d{2})\.(\d{4})/, // DD.MM.YYYY
-        /(\d{4})-(\d{2})-(\d{2})/,   // YYYY-MM-DD
-        /(\d{1,2})\/(\d{1,2})\/(\d{4})/ // MM/DD/YYYY
-    ];
-    
-    for (const format of formats) {
-        const match = dateString.match(format);
-        if (match) {
-            const [, p1, p2, p3] = match;
-            // Определяем формат по группам
-            if (format.source.includes('\\d{2}\\.\\d{2}\\.\\d{4}')) {
-                // DD.MM.YYYY
-                return new Date(p3, p2 - 1, p1);
-            } else if (format.source.includes('\\d{4}-\\d{2}-\\d{2}')) {
-                // YYYY-MM-DD
-                return new Date(p1, p2 - 1, p3);
-            } else {
-                // MM/DD/YYYY
-                return new Date(p3, p1 - 1, p2);
-            }
-        }
+    // Пробуем DD.MM.YYYY
+    const match = dateString.match(/(\d{2})\.(\d{2})\.(\d{4})/);
+    if (match) {
+        const [, day, month, year] = match;
+        return new Date(year, month - 1, day);
     }
     
-    // Пробуем стандартный парсинг
-    const date = new Date(dateString);
-    if (!isNaN(date.getTime())) {
-        return date;
-    }
-    
-    return new Date();
+    return new Date(dateString);
 }
 
 function showError(message) {
     document.getElementById('content').innerHTML = `
         <div class="error">
-            <h3>Ошибка загрузки данных</h3>
+            <h3>Ошибка</h3>
             <p style="text-align: left; margin: 15px 0; white-space: pre-line;">${message}</p>
-            <button onclick="loadClientData()">Повторить попытку</button>
-            <button onclick="location.reload()" style="background: #95a5a6; margin-left: 10px;">Обновить страницу</button>
+            <button onclick="loadClientData()">Повторить</button>
         </div>
     `;
 }
